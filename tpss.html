@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Rebalancing Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([37.5665, 126.9780], 13); // 서울 중심
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    // ✅ 백엔드 결과를 여기에 직접 넣어주세요 (예시)
+    const overflow = [
+      { id: 'ST-1002', lat: 37.57, lon: 126.98 }
+    ];
+    const underflow = [
+      { id: 'ST-1995', lat: 37.564, lon: 126.992 }
+    ];
+    const rebalancing_plan = [
+      {
+        from: 'ST-1002',
+        to: 'ST-1995',
+        move_count: 4,
+        distance: 731
+      }
+    ];
+
+    // ✅ 마커 표시
+    overflow.forEach(s => {
+      L.marker([s.lat, s.lon], { title: s.id })
+        .bindPopup(`Overflow: ${s.id}`)
+        .addTo(map);
+    });
+
+    underflow.forEach(s => {
+      L.marker([s.lat, s.lon], { title: s.id })
+        .bindPopup(`Underflow: ${s.id}`)
+        .addTo(map);
+    });
+
+    // ✅ 선 연결 (재배치)
+    rebalancing_plan.forEach(plan => {
+      const from = overflow.find(s => s.id === plan.from);
+      const to = underflow.find(s => s.id === plan.to);
+      if (from && to) {
+        L.polyline([[from.lat, from.lon], [to.lat, to.lon]], {
+          color: 'red',
+          weight: 3,
+          dashArray: '5, 5'
+        }).addTo(map).bindPopup(`${plan.move_count} bikes moved`);
+      }
+    });
+  </script>
+</body>
+</html>
